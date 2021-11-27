@@ -1,0 +1,11 @@
+# global:
+#   postgresql:
+#     postgresqlUsername: user ## User for database credentials
+#     postgresqlPassword: password ## Password for database credentials
+#     postgresqlDatabase: database ## Name for the database
+
+image:
+  registry: docker.io ## Regestry for the image
+  repository: bitnami/postgresql ## Repository for the application image
+  tag: 11.14.0-debian-10-r0 ## Tag for the image
+  pullPolicy: IfNotPresent ## Pull policy for the image 

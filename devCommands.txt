@@ -1,0 +1,9 @@
+## to build a new application do the following:
+## first go the the dockerfile location
+    cd dockerfile
+## Edit the dockerfile as you see fit / app.py file
+## Then build your new image tag it and push it to a repostiry
+    docker build -t \${repository}\${IMAGENAME}:\${IMAGETAG} .
+    docker push \${repository}\${IMAGENAME}:\${IMAGETAG}
+## Update the values.yaml files on the app-values.yaml and change to the configuration you need
+## Once all of that is done we can run the deployment job on your branch 

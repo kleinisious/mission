@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "postgresql.primary.fullname" . }}-job
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}-job
+        image: {{ template "postgresql.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "postgresql.secretName" . }}
+              key: postgresql-password
+        - name: POSTGRES_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "postgresql.secretName" . }}
+              key: postgresql-username
+        - name: POSTGRES_DATABASE
+          value: {{ (include "postgresql.database" .) | quote }}
+        - name: POSTGRES_HOSTNAME
+          value: {{ template "common.names.fullname" . }}
+        command: ["/bin/bash"]
+        args: 
+        - -c
+        - |
+          export PGPASSWORD=$POSTGRES_PASSWORD
+          until psql -c '\l' -U $POSTGRES_USERNAME -d $POSTGRES_DATABASE -h $POSTGRES_HOSTNAME -a -w; do echo "waiting" ; sleep 5 ; done
+          if [ "$(ls -A ./initscripts/*.sql)" ] ; then for f in $(ls ./initscripts/*); do psql -U $POSTGRES_USERNAME -d $POSTGRES_DATABASE -h $POSTGRES_HOSTNAME -a -w -f $f || true ; done ; fi
+          echo "done"
+          sleep 3000
+        volumeMounts:
+          - name: custom-init-scripts
+            mountPath: /initscripts
+      volumes:
+        - name: custom-init-scripts
+          configMap:
+            name: {{ .Release.Name }}-configmap
+      restartPolicy: {{ .Values.job.restartPolicy }}

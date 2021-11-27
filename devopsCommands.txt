@@ -1,0 +1,40 @@
+##  To deploy a new clean environment we will need the following:
+##  installing helm + helmfile on a server like so :
+    wget https://get.helm.sh/helm-v3.6.0-linux-amd64.tar.gz --no-check-certificate
+    tar xvf helm-v3.6.0-linux-amd64.tar.gz ; mv linux-amd64/helm /usr/local/bin
+    rm -rf linux-amd64
+    rm -rf helm-v3.6.0-linux-amd64.tar.gz
+    mv helmfile_linux_amd64 /usr/local/bin/helmfile
+    helm plugin install https://github.com/databus23/helm-diff
+## Next we will need to connect to the k8s server i recommand copying the .kube config file to the \$HOME/.kube dir like so :
+    scp -o StrictHostKeyChecking=no -i $kube_private_key root@$MANAGER_NODE:/etc/kubernetes/admin.conf ~/.kube/config
+## If we want we can also install kubectl on the server like so:
+    curl -LO https://dl.k8s.io/release/v1.22.0/bin/linux/amd64/kubectl
+    mv kubectl /usr/local/bin/
+    chmod +x /usr/local/bin/kubectl
+
+## If we want to update the Init DB Script we can go to the location helm-charts\postgresql\files\jobinit and set the sql files we want
+##  Now we need to make sure we are on the helm-charts dir
+    cd helm-charts
+##  and make sure we have all the values files updated for our configuration both the app-values.yaml and the postgres.values.yaml
+##  Once everything is ok from the values file we will need to export our environment variables to be added to the helm deployment
+    export POSTGRES_USERNAME=omri
+    export POSTGRES_PASSWORD=Aa123456
+    export POSTGRES_DATABASE=postgres
+    export POSTGRES_APPNAME=mypostgres
+    export APP_HOSTNAME=MYHostname
+    export APP_GREETING="Hello this is my greeting"
+## Once that is set we need to run the helmfile deploy command
+    helmfile -q -f helmfile.yaml apply --include-needs --suppress-secrets --suppress-diff
+## after running the command , once the init job pod is completed, we can work with the application by connecting to http://anzu.test
+
+
+
+
+## IF for some reason you need to destroy the helmfile we can use the command: (helmfile even for destroy for some reason needs all the environment variables too so make sure you have them all)
+    helmfile -q -f helmfile.yaml destroy
+    kubectl get pvc -o name ## save the name
+    kubectl delete pvc *** ## Replcae *** with the name 
+    kubectl delete pvc data-mypostgres-postgresql-0
+
+###### PS , I recommand doing of all of this in a pipeline which can hide secrets such as credentials inside the delpoyment

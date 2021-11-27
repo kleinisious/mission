@@ -1,0 +1,18 @@
+image:
+  repository: kleinisious/app ## Repository for the application image
+  pullPolicy: Always ## Pull policy (if updating the same tag version this is reccommanded)
+  tag: "test" ## tag for the image
+
+
+autoscaling:
+  enabled: true ## if not production false for 1 replica is fine
+  minReplicas: 2
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+# app_vars:
+#   DATABASE_HOSTNAME: postgreshelmhostname ##This needs to be the same as the helm install name 
+#   DATABASE_NAME: database ## Name for the database
+#   DATABASE_USER: user ## User for database credentials
+#   DATABASE_PASSWORD: password ## Password for database credentials
+#   HOSTNAME: "Server hostname" ## Hostname for the application server
+#   GREETING: "Application greeting" ## Greeting for the application

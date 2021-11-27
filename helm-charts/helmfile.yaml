@@ -1,0 +1,28 @@
+releases:
+  - name: {{ requiredEnv "POSTGRES_APPNAME" }}
+    namespace: default
+    chart: ./postgresql
+    version: ~11.14.0
+    values:
+      - global:
+            postgresql:
+              postgresqlUsername: {{ requiredEnv "POSTGRES_USERNAME" }}
+              postgresqlPassword: {{ requiredEnv "POSTGRES_PASSWORD" }}
+              postgresqlDatabase: {{ requiredEnv "POSTGRES_DATABASE" }}
+      - postgres.values.yml
+
+  - name: app
+    namespace: default
+    chart: ./app
+    version: ~1.16.0
+    values:
+    - app_vars:
+        DATABASE_HOSTNAME: {{ requiredEnv "POSTGRES_APPNAME" }}
+        DATABASE_NAME: {{ requiredEnv "POSTGRES_DATABASE" }}
+        DATABASE_USER: {{ requiredEnv "POSTGRES_USERNAME" }}
+        DATABASE_PASSWORD: {{ requiredEnv "POSTGRES_PASSWORD" }}
+        HOSTNAME: {{ requiredEnv "APP_HOSTNAME" }}
+        GREETING: {{ requiredEnv "APP_GREETING" }}
+    - app-values.yaml
+    needs:
+      - {{ requiredEnv "POSTGRES_APPNAME" }}
